@@ -21,6 +21,9 @@ public class EsbAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    /***
+     * 注入Esb服务构造器
+     */
     public EsbServiceBuilder createServiceBuilder() {
         ServiceBuilder builder =  new ServiceBuilder( this.applicationProperties.getApplicationId(), this.applicationProperties.getEsbServer());
         builder.addHandler(new JsonHeaderHandler());
