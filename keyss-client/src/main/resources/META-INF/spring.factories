@@ -1,0 +1,5 @@
+org.springframework.context.ApplicationListener=\
+cn.keyss.client.config.ConfigApplicationListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+cn.keyss.client.autoconfig.esb.EsbAutoConfiguration,\
+cn.keyss.client.autoconfig.security.SecurityAutoConfiguration
