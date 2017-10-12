@@ -7,6 +7,9 @@ public class EsbException extends RuntimeException {
 
     private static final long serialVersionUID = 7940039672855751820L;
 
+    /***
+     * 缺少构造器
+     */
     public EsbException() {
         super();
     }
