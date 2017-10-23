@@ -5,6 +5,7 @@ import cn.keyss.client.esb.contract.datacontract.Service;
 import cn.keyss.common.rpc.RpcInterceptionHandler;
 import cn.keyss.common.rpc.handers.ApplicationContextHandler;
 import cn.keyss.common.rpc.handers.JsonHeaderHandler;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,10 @@ public class ServiceBuilderImpl implements ServiceBuilder {
      * @param defaultTags 缺省标签
      */
     public ServiceBuilderImpl(int application, String esbServerUrl, String defaultTags) {
+
+        Assert.notNull(application, "参数application不能为空!");
+        Assert.notNull(esbServerUrl, "参数esbServerUrl不能为空!");
+
         this.esbInfoLoader = new EsbInfoLoader(application, esbServerUrl);
         this.defaultTags = TagsHelper.parseTagsString(defaultTags);
         this.handlers = new ArrayList<>();

@@ -7,6 +7,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("keyss.esb")
 public class EsbProperties {
+
+    private boolean enable;
+
     private int application;
 
     /***
@@ -47,5 +50,13 @@ public class EsbProperties {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }
