@@ -1,8 +1,8 @@
-package cn.keyss.client.esb.loader;
+package cn.keyss.client.esb;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import cn.keyss.client.esb.EsbException;
 import cn.keyss.client.esb.contract.EsbService;
 import cn.keyss.client.esb.contract.datacontract.Event;
 import cn.keyss.client.esb.contract.datacontract.QueryApplicationEventsRequest;
@@ -23,26 +22,35 @@ import cn.keyss.client.esb.contract.datacontract.QueryApplicationServicesRequest
 import cn.keyss.client.esb.contract.datacontract.QueryApplicationServicesResponse;
 import cn.keyss.client.esb.contract.datacontract.Service;
 import cn.keyss.common.rpc.RpcProxy;
+
 /**
- * 应用信息加载器
+ * 服务总线信息加载器
  */
-public class ApplicationRouteInfoLoader {
+public class EsbInfoLoader {
     /**
      * 日志
      */
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationRouteInfoLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(EsbInfoLoader.class);
 
+    /***
+     * 应用
+     */
     private int application;
 
     /**
-     * esb服务
+     * esb服务代理
      */
     private RpcProxy<EsbService> esbService;
 
-    public ApplicationRouteInfoLoader(int application, String esbServerUrl) {
+    /***
+     * 构造器
+     * @param application 应用
+     * @param esbServerUrl 企业服务总线服务
+     */
+    public EsbInfoLoader(int application, String esbServerUrl) {
         this.application = application;
         if (StringUtils.isEmpty(application) || StringUtils.isEmpty(esbServerUrl)) {
-            logger.warn("ESB CLIENT未启动");
+            logger.warn("应用或ESB服务器地址未设置，ESB信息加载器未启动");
             return;
         }
         this.esbService = new RpcProxy<EsbService>(EsbService.class, esbServerUrl, new RestTemplate());
@@ -79,18 +87,14 @@ public class ApplicationRouteInfoLoader {
      * 开始调度
      */
     private void startSchedule() {
+        //第一次同步启动加载
         loadEsbService();
-        if (serviceInfos != null) {
-            for (Service service : serviceInfos) {
-                logger.info("ESB LOAD:{}", service.toString());
-            }
-        }
-        // loadEsbEvent();
+        loadEsbEvent();
         if (isRunning == false) {
             Runnable runnable = new Runnable() {
                 public void run() {
                     loadEsbService();
-                    // loadEsbEvent();
+                    loadEsbEvent();
                 }
             };
             executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -101,34 +105,28 @@ public class ApplicationRouteInfoLoader {
                     return t;
                 }
             });
+            //之后定时刷新
             executorService.scheduleAtFixedRate(runnable, 10, 10, TimeUnit.MINUTES);
             isRunning = true;
         }
-    }
-
-    public List<Service>  getAllServices() {
-        return serviceInfos;
     }
 
     /**
      * 加载服务信息
      */
     private void loadEsbService() {
-        logger.trace(String.format("Load Esb Service Start Thread:%s [%s]", Thread.currentThread().getName(),
-                Thread.currentThread().getId()));
-
         QueryApplicationServicesRequest request = new QueryApplicationServicesRequest();
         request.setApplication(application);
-        request.setCallSource("shitou.esb.client");
+        request.setCallSource("keyss.client.esb");
 
         try {
-
             QueryApplicationServicesResponse response = this.esbService.getTransparentProxy()
                     .queryApplicationServices(request);
-            if (  response.getResultCode()!= 0)
+            if (response.getResultCode() != 0)
                 throw new EsbException(String.format("%s", response.getResultCode(), response.getResultMessage()));
             if (response.getServices() == null)
                 response.setServices(new ArrayList<>());
+
             try {
                 syncLock.writeLock().lock();
                 serviceInfos = response.getServices();
@@ -136,16 +134,11 @@ public class ApplicationRouteInfoLoader {
                 syncLock.writeLock().unlock();
             }
 
+            for (Service service : response.getServices()) {
+                logger.info("加载ESB服务：{}", service.getContract());
+            }
         } catch (Throwable e) {
             logger.error("访问企业总线异常！" + e.getMessage());
-        }
-
-        try {
-            syncLock.readLock().lock();
-            logger.trace(String.format("Load Esb Services - DownLoad List Finish,TotalCnt:%s",
-                    this.serviceInfos == null ? 0 : this.serviceInfos.size()));
-        } finally {
-            syncLock.readLock().unlock();
         }
     }
 
@@ -153,17 +146,14 @@ public class ApplicationRouteInfoLoader {
      * 加载事件信息
      */
     private void loadEsbEvent() {
-        logger.trace(String.format("Load Esb Event Start Thread:%s [%s]", Thread.currentThread().getName(),
-                Thread.currentThread().getId()));
-
         QueryApplicationEventsRequest request = new QueryApplicationEventsRequest();
         request.setApplication(application);
-        request.setCallSource("shitou.client.esb");
+        request.setCallSource("keyss.client.esb");
 
         try {
             QueryApplicationEventsResponse response = this.esbService.getTransparentProxy()
                     .queryApplicationEvents(request);
-            if (  response.getResultCode()!= 0)
+            if (response.getResultCode() != 0)
                 throw new EsbException(String.format("%s", response.getResultCode(), response.getResultMessage()));
             if (response.getEvents() == null)
                 response.setEvents(new ArrayList<>());
@@ -174,48 +164,20 @@ public class ApplicationRouteInfoLoader {
                 syncLock.writeLock().unlock();
             }
 
-        } catch (Exception e) {
-            logger.error("访问企业总线异常！" + e.getMessage());
-        }
-
-        try {
-            syncLock.readLock().lock();
-            logger.trace(String.format("Load Esb Event - DownLoad List Finish,TotalCnt:%s",
-                    this.serviceInfos == null ? 0 : this.serviceInfos.size()));
-        } finally {
-            syncLock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Contains Function：标签比对.
-     *
-     * @param srcTags
-     *            源标签
-     * @param dstTags
-     *            比对标签
-     * @return 源标签是否包含目标标签
-     * @author Alex Lee
-     */
-    private boolean contains(List<String> srcTags, List<String> dstTags) {
-        if (dstTags == null || dstTags.size() == 0)
-            return true;
-
-        if (srcTags == null || srcTags.size() == 0)
-            return false;
-
-        for (String t : dstTags) {
-            if (!srcTags.contains(t)) {
-                return false;
+            for (Event event : response.getEvents()) {
+                logger.info("加载ESB事件：{}", event.getContract());
             }
+
+        } catch (Exception e) {
+            logger.error("访问企业服务总线异常：" + e.getMessage());
         }
-        return true;
     }
 
-    /**
-     * FindService Function：查找服务.
-     *
-     * @param tags
+    /***
+     * 查找服务
+     * @param clazz 契约
+     * @param tags 源标签
+     * @return 服务信息
      */
     public Service findService(Class clazz, List<String> tags) {
         Service result = null;
@@ -226,8 +188,7 @@ public class ApplicationRouteInfoLoader {
             }
             // 根据全类名找到对应的服务 可能需要用到注解
             for (Service service : serviceInfos) {
-                // 如果contract 和 注解匹配且...
-                if (service.getContract().equals(clazz.getName()) && contains(service.getTags(), tags)) {
+                if (service.getContract().equals(clazz.getName()) && TagsHelper.contains(service.getTags(), tags)) {
                     result = service;
                     return result;
                 }
@@ -238,11 +199,11 @@ public class ApplicationRouteInfoLoader {
         return result;
     }
 
-    /**
-     * 查找Event
-     *
-     * @param clazz
-     * @return Event
+
+    /***
+     * 查找事件
+     * @param clazz 契约
+     * @return 事件信息
      */
     public Event findEvent(Class clazz) {
         Event result = null;

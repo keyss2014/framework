@@ -20,11 +20,6 @@ import java.util.Map;
 public class ConfigProperties {
 
     /**
-     * 日志
-     */
-    private static Logger logger = LoggerFactory.getLogger(ConfigProperties.class);
-
-    /**
      * 应用编号
      */
     private int application;

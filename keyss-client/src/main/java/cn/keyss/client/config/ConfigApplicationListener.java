@@ -41,17 +41,17 @@ public class ConfigApplicationListener implements GenericApplicationListener {
     /**
      * 远程配置源名称
      */
-    private static final String CONFIG_SOURCE_NAME = "keyssConfig";
+    private static final String CONFIG_SOURCE_NAME = "keyss.config";
 
     /**
      * 配置服务器地址属性名称
      */
-    private static final String CONFIG_SERVER = "keyss.configServer";
+    private static final String CONFIG_SERVER = "keyss.config.server";
 
     /**
      * 应用属性名称
      */
-    private static final String APPLICATION =  "keyss.applicationId";
+    private static final String APPLICATION = "keyss.config.application";
 
     @Override
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
@@ -67,25 +67,23 @@ public class ConfigApplicationListener implements GenericApplicationListener {
             String application = envi.getProperty(APPLICATION);
             if (application == null || application.trim().length() == 0) {
                 return;
-                //throw new ConfigException("esb.application应用配置信息无效！");
             }
             ConfigProperties configProperties = new ConfigProperties(configServerUrl, Integer.parseInt(application));
             //设置全局属性实例，供手工调用
             ConfigProperties.setInstance(configProperties);
-
             MutablePropertySources mps = envi.getPropertySources();
             MapPropertySource mapPropertySource = new MapPropertySource(CONFIG_SOURCE_NAME, configProperties.getProperties());
 
             //解析
             mps.addAfter(ConfigFileApplicationListener.APPLICATION_CONFIGURATION_PROPERTY_SOURCE_NAME, mapPropertySource);
-        }else   if (applicationEvent instanceof ApplicationPreparedEvent) {
+        } else if (applicationEvent instanceof ApplicationPreparedEvent) {
             ConfigProperties configProperties = ConfigProperties.getInstance();
             if (configProperties == null) {
-                logger.warn("CONFIG CLIENT未启动");
+                logger.warn("应用或配置服务器地址未设置，远程应用配置未启动");
                 return;
             }
             for (Map.Entry<String, Object> entry : configProperties.getProperties().entrySet()) {
-                logger.info("远程应用变量:{}={}", entry.getKey(), entry.getValue());
+                logger.info("远程应用配置:{}={}", entry.getKey(), entry.getValue());
             }
         }
     }
