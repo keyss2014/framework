@@ -54,7 +54,7 @@ public class RpcProxy<T> implements InvocationHandler {
     /**
      * 获取注入链
      */
-    private List<RpcInterceptionHandler> handlers = new ArrayList<>();
+    private List<RpcInterceptionHandler> handlers ;
     protected  List<RpcInterceptionHandler> getInterceptionHandlers(){
         return handlers;
     }
@@ -97,21 +97,6 @@ public class RpcProxy<T> implements InvocationHandler {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-//        String methodName = method.getName();
-//        Class<?>[] parameterTypes = method.getParameterTypes();
-//        if (method.getDeclaringClass() == Object.class) {
-//            return method.invoke(this, args);
-//        }
-//        if ("toString".equals(methodName) && parameterTypes.length == 0) {
-//            return this.toString();
-//        }
-//        if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-//            return this.hashCode();
-//        }
-//        if ("equals".equals(methodName) && parameterTypes.length == 1) {
-//            return this.equals(args[0]);
-//        }
 
         Assert.notNull(proxy, "参数proxy不能为空!");
         Assert.notNull(method, "参数method不能为空!");
