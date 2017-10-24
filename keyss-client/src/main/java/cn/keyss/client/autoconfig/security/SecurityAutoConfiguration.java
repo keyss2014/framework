@@ -12,22 +12,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 @Configuration
 @EnableConfigurationProperties({SecurityProperties.class})
 public class SecurityAutoConfiguration {
-    @Bean
-    @ConditionalOnMissingBean
-    public RoleProvider createRoleProvider() {
-        return new RoleProvider() {
-            @Override
-            public String[] queryUserRoles(String username) {
-                return new String[0];
-            }
-        };
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "keyss.security.type", havingValue = "server")
-    public UserDetailsService createUserDetailsService() {
-        return null;
-    }
-
-
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public RoleProvider createRoleProvider() {
+//        return new RoleProvider() {
+//            @Override
+//            public String[] queryUserRoles(String username) {
+//                return new String[0];
+//            }
+//        };
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(prefix = "keyss.security.type", havingValue = "server")
+//    public UserDetailsService createUserDetailsService() {
+//        return null;
+//    }
 }

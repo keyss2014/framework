@@ -63,7 +63,7 @@ public class ConfigApplicationListener implements GenericApplicationListener {
 
             ConfigurableEnvironment envi = event.getEnvironment();
             String enable = envi.getProperty(CONFIG_ENABLE);
-            if(enable == null || enable.toUpperCase()!="TRUE" ){
+            if (enable == null || !enable.toUpperCase().equals("TRUE")) {
                 logger.warn("远程应用配置未激活");
                 return;
             }
