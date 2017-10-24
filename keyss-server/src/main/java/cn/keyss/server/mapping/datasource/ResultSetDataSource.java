@@ -32,7 +32,7 @@ public class ResultSetDataSource implements DataSource {
      */
     @Override
     public boolean contains(String key) {
-        if (key == null || key == "")
+        if (key == null || key.length() == 0)
             throw new IllegalArgumentException("key不能为Null或空字符串！");
         try {
             return this.resultSet.findColumn(key) >= 0;
@@ -50,7 +50,7 @@ public class ResultSetDataSource implements DataSource {
      */
     @Override
     public Object getValue(String key, Class<?> targetClazz) {
-        if (key == null || key == "")
+        if (key == null || key.length() == 0)
             throw new IllegalArgumentException("key不能为Null或空字符串！");
 
         if (targetClazz == null)

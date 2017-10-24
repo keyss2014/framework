@@ -309,7 +309,7 @@ public class MsSqlDataEngine implements DataEngine {
     }
 
     private void appendSelect(StringBuilder sb, DbSelect select) {
-        if (select.getName() == "*") {
+        if ("*".equals( select.getName())) {
             if (select.getTable() == null || "".equals(select.getTable().trim()))
                 sb.append("*");
             else {

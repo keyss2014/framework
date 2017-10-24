@@ -27,7 +27,7 @@ public class MapDataSource implements DataSource {
      */
     @Override
     public boolean contains(String key) {
-        if (key == null || key == "")
+        if (key == null || key.length()==0)
             throw new IllegalArgumentException("key不能为Null或空字符串！");
 
         return map == null ? false : true;
@@ -42,7 +42,7 @@ public class MapDataSource implements DataSource {
      */
     @Override
     public Object getValue(String key, Class<?> targetClazz) {
-        if (key == null || key == "")
+        if (key == null || key.length() == 0)
             throw new IllegalArgumentException("key不能为Null或空字符串！");
 
         if (targetClazz == null)
@@ -67,7 +67,7 @@ public class MapDataSource implements DataSource {
      */
     @Override
     public void setValue(String key, Class<?> valueClazz, Object value) {
-        if (key == null || key == "")
+        if (key == null || key.length()==0)
             throw new IllegalArgumentException("key不能为Null或空字符串！");
 
         if (valueClazz == null)
