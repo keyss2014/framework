@@ -11,6 +11,13 @@ import javax.servlet.http.HttpServletResponse;
 public class KeyssAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public static final String SPRING_SECURITY_FORM_AUTHCODE_KEY = "authcode";
 
+    /***
+     * 增加验证码校验
+     * @param request
+     * @param response
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
